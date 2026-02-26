@@ -1,7 +1,5 @@
 "use client"
 
-export const dynamic = "force-dynamic"
-
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -10,10 +8,13 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, LogIn } from "lucide-react"
 import Link from "next/link"
 
+// Wymuszamy dynamic rendering w Next.js 13 App Router
+export const dynamic = "force-dynamic"
+
 export default function PlayJoinPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const codeParam = searchParams.get("code") ?? ""
+  const codeParam = searchParams?.get("code") ?? ""
 
   const [code, setCode] = useState(codeParam)
   const [name, setName] = useState("")
@@ -23,6 +24,7 @@ export default function PlayJoinPage() {
 
   // Sprawdź pokój gdy kod jest podany
   useEffect(() => {
+    if (typeof window === "undefined") return // zabezpieczenie dla Node
     if (code.length === 6) {
       fetch(`/api/rooms/${code}`)
         .then((res) => {
@@ -38,6 +40,7 @@ export default function PlayJoinPage() {
 
   // Sprawdź czy w sessionStorage jest zapisana sesja dla tego pokoju
   useEffect(() => {
+    if (typeof window === "undefined") return // zabezpieczenie dla Node
     if (code.length === 6) {
       try {
         const stored = sessionStorage.getItem(`quiz-session-${code}`)
@@ -156,9 +159,7 @@ export default function PlayJoinPage() {
           <Button
             type="submit"
             size="lg"
-            disabled={
-              code.length !== 6 || name.trim().length === 0 || loading
-            }
+            disabled={code.length !== 6 || name.trim().length === 0 || loading}
             className="h-12 text-base font-bold"
           >
             <LogIn className="size-5" />
